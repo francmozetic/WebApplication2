@@ -52,3 +52,7 @@ blockquote {
 }
 
 blockquote a, blockquote a:hover { color: #068006; }
+
+label {
+    font-weight: normal;
+}

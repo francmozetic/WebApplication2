@@ -1,28 +1,11 @@
-﻿import { Component, Injectable, OnInit } from '@angular/core';
+﻿import { Component, OnInit, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Router, ActivatedRoute } from '@angular/router';
 import 'rxjs/add/operator/first';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-
-    constructor(private router: Router) { }
-
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-        if (localStorage.getItem('currentUser')) {
-            // logged in so return true
-            return true;
-        }
-
-        // not logged in so redirect to login page
-        this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-        return false;
-    }
-}
-
-@Injectable()
 export class AuthenticationService {
+
     constructor(private http: HttpClient) { }
 
     login(username: string, password: string) {
@@ -45,9 +28,20 @@ export class AuthenticationService {
 }
 
 @Component({
-    //moduleId: module.id,
     selector: 'login',
-    templateUrl: 'login.component.html'
+    template: `
+        <h1>Login</h1>
+        <blockquote>
+            <strong>ASP.NET Core 2.0 and Angular 5</strong>
+            <br>
+                <label for="username">Username</label>
+                <input type="text" name="username" [(ngModel)]="model.username" #username="ngModel" required />
+                <label for="password">Password</label>
+                <input type="password" name="password" [(ngModel)]="model.password" #password="ngModel" required />
+                <button (click)="login()">Login</button>
+        </blockquote>
+        `,
+    styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
     model: any = {};
@@ -55,10 +49,7 @@ export class LoginComponent implements OnInit {
     returnUrl: string = '';
     error = '';
 
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private authenticationService: AuthenticationService) { }
+    constructor(private route: ActivatedRoute, private router: Router, private authenticationService: AuthenticationService) { }
 
     ngOnInit() {
         // reset login status

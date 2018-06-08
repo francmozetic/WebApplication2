@@ -1,6 +1,8 @@
 import { Component, Injectable, OnInit } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class AuthGuardService implements CanActivate {
@@ -12,33 +14,31 @@ export class AuthGuardService implements CanActivate {
             // logged in so return true
             return true;
         }
-
-        // not logged in so redirect to login page
-        this.router.navigate(['home'], { queryParams: { returnUrl: state.url } });
-        return false;
+        else {
+            // not logged in so redirect to login page
+            this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+            return false;
+        }
     }
 }
 
 @Injectable()
-export class AuthenticationService {
-    constructor(private http: HttpClient) { }
+export class JwtInterceptor implements HttpInterceptor {
 
-    login(username: string, password: string) {
-        return this.http.post<any>('/api/authenticate', { username: username, password: password })
-            .map(user => {
-                // login successful if there's a jwt token in the response
-                if (user && user.token) {
-                    // store user details and jwt token in local storage to keep user logged in between page refreshes
-                    localStorage.setItem('currentUser', JSON.stringify(user));
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        // add authorization header with jwt token if available
+        let currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        /*const userJson = localStorage.getItem('currentUser');
+        let currentUser = userJson !== null ? JSON.parse(userJson) : new User();*/
+        if (currentUser && currentUser.token) {
+            request = request.clone({
+                setHeaders: {
+                    Authorization: `Bearer ${currentUser.token}`
                 }
-
-                return user;
             });
-    }
+        }
 
-    logout() {
-        // remove user from local storage to log user out
-        localStorage.removeItem('currentUser');
+        return next.handle(request);
     }
 }
 
@@ -54,42 +54,11 @@ export class AuthenticationService {
                 <label for="password">Password</label>
                 <input type="password" name="password" [(ngModel)]="model.password" #password="ngModel" required />
                 <button (click)="login()">Login</button>
+            <br>
+                {{loadingStr}}
         </blockquote>
         `,
     styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
-    model: any = {};
-    loading = false;
-    returnUrl: string = '';
-    error = '';
-
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private authenticationService: AuthenticationService) { }
-
-    ngOnInit() {
-        // reset login status
-        this.authenticationService.logout();
-
-        // get return url from route parameters or default to '/'
-        this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    }
-
-    login() {
-        this.loading = true;
-        this.authenticationService.login(this.model.username, this.model.password)
-            .first()
-            .subscribe(
-                data => {
-                    this.router.navigate([this.returnUrl]);
-                },
-                error => {
-                    this.error = error;
-                    this.loading = false;
-                });
-    }
+export class HomeComponent {
 }
-/*export class HomeComponent {
-}*/
