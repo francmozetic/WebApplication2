@@ -1,0 +1,24 @@
+<h1>Fetch audio levels</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<p *ngIf="!data"><em>Loading...</em></p>
+
+<table class='table' *ngIf="data">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>DataAll</th>
+            <th>isComplete</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ data.id }}</td>
+            <td>{{ data.name }}</td>
+            <td>{{ data.dataAll }}</td>
+            <td>{{ data.isComplete }}</td>
+        </tr>
+    </tbody>
+</table>
