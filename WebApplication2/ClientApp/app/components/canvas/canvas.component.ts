@@ -97,7 +97,6 @@ export class CanvasComponent implements AfterViewInit {
         this.cx.lineWidth = 1;
         this.cx.lineCap = 'round';
         this.cx.strokeStyle = '#8B0000';
-        //this.captureEvents(this.canvas1.nativeElement);
 
         this.ctx = this.canvas2.nativeElement.getContext('2d');
         this.canvas2.nativeElement.width = this.width;
@@ -172,6 +171,7 @@ export class CanvasComponent implements AfterViewInit {
 
         IntervalObservable.create(1000)
             .takeWhile(() => this.capture)
+            .takeUntil(Observable.fromEvent(this.canvas1.nativeElement, 'click'))
             .subscribe(() => {
                 this.index = this.index + 1;
                 let indexStr = String(this.index);
@@ -224,7 +224,7 @@ export class CanvasComponent implements AfterViewInit {
         this.capture = false;
     }
 
-    private captureEvents(canvasElement: HTMLCanvasElement) {
+    private captureMouseEvents(canvasElement: HTMLCanvasElement) {
         Observable
             .fromEvent(canvasElement, 'mousedown')
             .switchMap((e) => {
