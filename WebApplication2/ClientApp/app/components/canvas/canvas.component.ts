@@ -3,12 +3,18 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { IntervalObservable } from "rxjs/observable/IntervalObservable";
-import { TimerObservable } from "rxjs/observable/TimerObservable";
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
+import { Subject } from 'rxjs/Subject';
 
 import 'rxjs/add/observable/fromEvent';
+import 'rxjs/add/observable/never';
+import 'rxjs/add/observable/interval';
+import 'rxjs/add/observable/timer';
+
 import 'rxjs/add/operator/pairwise';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/mapTo';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/takeWhile';
 
@@ -55,7 +61,8 @@ export class StatusService {
     template: `
         <h1>Update and visualize audio data</h1>
         <blockquote><strong>ASP.NET Core 2.0 and Angular 5</strong>
-            <br>{{loadingString}}{{" Click update to load new data. "}}<button (click)="updateAudio()">Update</button><br></blockquote>
+            <br>{{loadingString}}{{" Click update to load new data. "}}<button (click)="updateAudio()">Update</button>{{" Click to stop - start the animation. "}}<button (click)="pauseAnimation()">Pause</button>
+        </blockquote>
         <canvas #canvas1></canvas>
         <canvas #canvas2></canvas>
         `,
@@ -69,7 +76,9 @@ export class CanvasComponent implements AfterViewInit {
     private index: number = 1;
     private isLoading: boolean = false;
     private isComplete: boolean = false;
+    private isPaused: boolean = false;
     private loadingString: string = "Ready.";
+    private pauser = new Subject();
 
     @ViewChild('canvas1') public canvas1: ElementRef;
     @ViewChild('canvas2') public canvas2: ElementRef;
@@ -85,6 +94,10 @@ export class CanvasComponent implements AfterViewInit {
         this.index = 1;
         let indexStr = String(this.index);
         this.iStatus.updateStatus(indexStr).subscribe(() => { });
+    }
+
+    public pauseAnimation() {
+        if (this.isPaused) { this.pauser.next(false); this.isPaused = false; } else { this.pauser.next(true); this.isPaused = true; }
     }
 
     public ngAfterViewInit() {
@@ -169,6 +182,56 @@ export class CanvasComponent implements AfterViewInit {
                     });
             });
 
+        this.pauser.switchMap(paused => paused ? Observable.never() : IntervalObservable.create(1000))
+            .subscribe(() => {
+                this.index = this.index + 1;
+                let indexStr = String(this.index);
+                this.iTunes.captureData(indexStr)
+                    .subscribe(data => {
+                        let valuesStr = data.dataSpectrum;
+                        this.buffer = valuesStr.split(" ");
+                        this.buffer.shift();
+                        let countStr = this.buffer.shift();
+                        this.count = Number(countStr);
+                        this.buffer.shift();
+                        let vrednostStr = this.buffer.shift();
+                        this.vrednost = Number(vrednostStr);
+                        this.cx.clearRect(0, 0, 750, 250);
+                        this.cx.beginPath();
+                        for (let i = 0; i < 100; i++) {
+                            let x = i * 750 / 100;
+                            let y = 250;
+                            let width = 750 / 100 * 0.75;
+                            let height = - this.vrednost * 250;
+                            this.cx.fillRect(x, y, width, height);
+                            let vrednostStr = this.buffer.shift();
+                            this.vrednost = Number(vrednostStr);
+                        }
+                        this.cx.stroke();
+
+                        valuesStr = data.dataAll;
+                        this.buffer = valuesStr.split(" ");
+                        this.buffer.shift();
+                        countStr = this.buffer.shift();
+                        this.count = Number(countStr);
+                        this.buffer.shift();
+                        vrednostStr = this.buffer.shift();
+                        this.vrednost = Number(vrednostStr);
+                        this.ctx.clearRect(0, 0, 750, 250);
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, 125 - this.vrednost * 125);
+                        for (let i = 1; i <= 2200; i++) {
+                            let vrednostStr = this.buffer.shift();
+                            this.vrednost = Number(vrednostStr);
+                            this.ctx.lineTo(i * 750 / 2200, 125 - this.vrednost * 125);
+                        }
+                        this.ctx.stroke();
+                    });
+                if (this.index == 40) this.index = 1;
+            });
+
+        this.pauser.next(false);
+        /*
         IntervalObservable.create(1000)
             .takeWhile(() => this.capture)
             .takeUntil(Observable.fromEvent(this.canvas1.nativeElement, 'click'))
@@ -218,6 +281,7 @@ export class CanvasComponent implements AfterViewInit {
                     });
                 if (this.index == 40) this.index = 1;
             });
+            */
     }
 
     ngOnDestroy() {
