@@ -10,11 +10,12 @@ namespace WebApplication2
     public class Startup
     {
         // This method gets called by the runtime. Use this method to add services to the container.
-        /* services.AddDbContext<TodoContext>(opt => opt.UseSqlite("Data Source = Todo.db")); */
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TodoContext>(opt => opt.UseInMemoryDatabase("TodoList"));
-            services.AddDbContext<StatusContext>(opt => opt.UseInMemoryDatabase("StatusList"));
+            /*services.AddDbContext<TodoContext>(opt => opt.UseInMemoryDatabase("TodoList"));
+            services.AddDbContext<StatusContext>(opt => opt.UseInMemoryDatabase("StatusList"));*/
+            services.AddDbContext<TodoContext>(opt => opt.UseSqlite("Data Source = TodoList.db"));
+            services.AddDbContext<StatusContext>(opt => opt.UseSqlite("Data Source = StatusList.db"));
             services.AddMvc();
         }
 

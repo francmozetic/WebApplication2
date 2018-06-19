@@ -48,6 +48,13 @@ export class StatusService {
         return this.http.get<StatusData>('/api/Status/' + index);
     }
 
+    clearStatus(index: string): Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this.http.put('/api/Status/' + index, { "id": 1, "isLoading": false, "isComplete": false, "isPending": false }, httpOptions);
+    }
+
     updateStatus(index: string): Observable<any> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -120,6 +127,10 @@ export class CanvasComponent implements AfterViewInit {
         this.ctx.lineWidth = 1;
         this.ctx.lineCap = 'round';
         this.ctx.strokeStyle = '#8B0000';
+
+        let id = 1;
+        let idStr = String(id);
+        this.iStatus.clearStatus(idStr).subscribe(() => { });
 
         this.capture = true;
         this.index = 1;
