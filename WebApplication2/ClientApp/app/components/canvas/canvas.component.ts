@@ -1,6 +1,5 @@
 import { Component, Injectable, ViewChild, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { IntervalObservable } from "rxjs/observable/IntervalObservable";
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
@@ -25,13 +24,10 @@ class ApiData {
 @Injectable()
 export class AudioDataService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     captureData(index: string): Observable<ApiData> {
-        return this.http.get('/api/Todo/' + index)
-            .map(response => {
-                return response.json();
-            });
+        return this.http.get<ApiData>('/api/Todo/' + index);
     }
 }
 
@@ -68,7 +64,7 @@ export class StatusService {
     template: `
         <h1>Update and visualize audio data</h1>
         <blockquote><strong>ASP.NET Core 2.0 and Angular 5</strong>
-            <br>{{loadingString}}{{" Click update to load new data. "}}<button (click)="updateAudio()">Update</button>{{" Click to stop - start the animation. "}}<button (click)="pauseAnimation()">Pause</button>
+            <br>{{loadingString}}{{" Click update to load new data. "}}<button (click)="updateAudio()">Update</button>{{" Click pause to stop - start the animation. "}}<button (click)="pauseAnimation()">Pause</button>
         </blockquote>
         <canvas #canvas1></canvas>
         <canvas #canvas2></canvas>
@@ -175,24 +171,6 @@ export class CanvasComponent implements AfterViewInit {
                 this.ctx.stroke();
             });
 
-        TimerObservable.create(0, 100)
-            .takeWhile(() => this.capture)
-            .subscribe(() => {
-                let id = 1;
-                let idStr = String(id);
-                this.iStatus.captureStatus(idStr)
-                    .subscribe(data => {
-                        this.isLoading = data.isLoading;
-                        this.isComplete = data.isComplete;
-                        if (this.isComplete == true) {
-                            if (this.isLoading == true) this.loadingString = "Loading new data ..."; else this.loadingString = "New data loaded.";
-                        }
-                        else {
-                            if (this.isLoading == true) this.loadingString = "Loading new data ..."; else this.loadingString = "Ready.";
-                        }
-                    });
-            });
-
         this.pauser.switchMap(paused => paused ? Observable.never() : IntervalObservable.create(1000))
             .subscribe(() => {
                 this.index = this.index + 1;
@@ -242,6 +220,25 @@ export class CanvasComponent implements AfterViewInit {
             });
 
         this.pauser.next(false);
+
+        TimerObservable.create(0, 100)
+            .takeWhile(() => this.capture)
+            .subscribe(() => {
+                let id = 1;
+                let idStr = String(id);
+                this.iStatus.captureStatus(idStr)
+                    .subscribe(data => {
+                        this.isLoading = data.isLoading;
+                        this.isComplete = data.isComplete;
+                        if (this.isComplete == true) {
+                            if (this.isLoading == true) this.loadingString = "Loading new data ..."; else this.loadingString = "New data loaded.";
+                        }
+                        else {
+                            if (this.isLoading == true) this.loadingString = "Loading new data ..."; else this.loadingString = "Ready.";
+                        }
+                    });
+            });
+
         /*
         IntervalObservable.create(1000)
             .takeWhile(() => this.capture)
