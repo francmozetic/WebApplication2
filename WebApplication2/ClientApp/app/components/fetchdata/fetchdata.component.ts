@@ -1,4 +1,4 @@
-import { Component, Injectable, Inject, OnInit } from '@angular/core';
+import { Component, Injectable, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 
@@ -7,11 +7,11 @@ class ApiData {
 }
 
 @Injectable()
-export class AudioDataService {
+export class FetchDataService {
 
     constructor(private http: HttpClient) { }
 
-    captureData(index: string): Observable<ApiData> {
+    fetchData(index: string): Observable<ApiData> {
         return this.http.get<ApiData>('/api/Todo/' + index);
     }
 }
@@ -21,9 +21,8 @@ export class AudioDataService {
     template: `
         <h1>Fetch audio data</h1>
         <blockquote><strong>ASP.NET Core 2.0 and Angular 5</strong>
-            <br>{{" Click update to fetch new data. "}}<button (click)="updateAudio()">Update</button>
+            <br>{{" Click to fetch audio data. "}}<button (click)="fetchPrevious()">Previous</button>{{" "}}<button (click)="fetchNext()">Next</button>
         </blockquote>
-        <p *ngIf="!data"><em>Loading...</em></p>
         <table class='table' *ngIf="data">
             <thead>
                 <tr>
@@ -59,31 +58,59 @@ export class AudioDataService {
         `,
     styleUrls: ['./fetchdata.component.css']
 })
-export class FetchDataComponent {
+export class FetchDataComponent implements OnInit {
+    private index: number = 1;
     public data: ApiData | undefined;
-    //public data: UserResponse | undefined;
 
-    constructor(httpClient: HttpClient, @Inject('BASE_URL') baseUrl: string) {
-        httpClient.get<ApiData>(baseUrl + 'api/Todo/21').subscribe(result => {
+    constructor(private iTunes: FetchDataService) { }
+
+    /* previous constructor
+    public data: UserResponse | undefined;
+    
+    constructor(private http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
+        http.get<ApiData>(baseUrl + 'api/Todo/1').subscribe(result => {
             this.data = result;
         }, error => console.error(error));
 
-        /*httpClient.get<UserResponse>('https://api.github.com/users/seeschweiler').subscribe(result => {
+        http.get<UserResponse>('https://api.github.com/users/seeschweiler').subscribe(result => {
             this.data = result;
-        }, error => console.error(error));*/
+        }, error => console.error(error));
+    }
+    */
+
+    public fetchNext() {
+        if (this.index < 40) {
+            this.index = this.index + 1;
+            let indexStr = String(this.index);
+            this.iTunes.fetchData(indexStr)
+                .subscribe(result => {
+                    this.data = result;
+                });
+        }
+    }
+
+    public fetchPrevious() {
+        if (this.index > 1) {
+            this.index = this.index - 1;
+            let indexStr = String(this.index);
+            this.iTunes.fetchData(indexStr)
+                .subscribe(result => {
+                    this.data = result;
+                });
+        }
+    }
+
+    public ngOnInit() {
+        this.index = 1;
+        let indexStr = String(this.index);
+        this.iTunes.fetchData(indexStr)
+            .subscribe(result => {
+                this.data = result;
+        });
     }
 }
 
-interface ApiData {
-    id: number;
-    name: string;
-    dataAll: string;
-    dataSpectrum: string;
-    isComplete: boolean;
-}
-
-interface UserResponse {
-    login: string;
-    bio: string;
-    company: string;
-}
+/* interfaces
+interface ApiData { id: number; name: string; dataAll: string; dataSpectrum: string; isComplete: boolean; }
+interface UserResponse { login: string; bio: string; company: string; }
+*/

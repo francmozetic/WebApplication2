@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
 import { AppComponent } from './components/app/app.component';
 import { NavMenuComponent } from './components/navmenu/navmenu.component';
 import { HomeComponent, AuthGuardService } from './components/home/home.component';
-import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
+import { FetchDataComponent, FetchDataService } from './components/fetchdata/fetchdata.component';
 import { CanvasComponent, AudioDataService, StatusService } from './components/canvas/canvas.component';
 import { LoginComponent, AuthenticationService } from './components/login/login.component';
 
@@ -38,6 +38,7 @@ import { FakeBackendInterceptor } from './components/helpers/backend.interceptor
         ])
     ],
     providers: [
+        FetchDataService,
         AudioDataService,
         StatusService,
         AuthGuardService,
