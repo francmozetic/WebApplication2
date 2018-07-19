@@ -21,9 +21,7 @@ export class FetchDataService {
     template: `
         <h1>Fetch audio data</h1>
         <blockquote><strong>ASP.NET Core 2.0 and Angular 5</strong>
-            <br>
-                {{" Click to fetch audio data. "}}<button (click)="fetchPrevious()">Previous</button>
-                {{" "}}<button (click)="fetchNext()">Next</button>
+            <br>{{" Click next to fetch audio data. "}}<button (click)="fetchPrevious()">Previous</button>{{" "}}<button (click)="fetchNext()">Next</button>
         </blockquote>
         <table class='table' *ngIf="data">
             <thead>

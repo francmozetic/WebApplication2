@@ -7,15 +7,12 @@ import { Subject } from 'rxjs/Subject';
 
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/observable/never';
-import 'rxjs/add/observable/interval';
-import 'rxjs/add/observable/timer';
-
-import 'rxjs/add/operator/pairwise';
-import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mapTo';
+import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/takeWhile';
+import 'rxjs/add/operator/pairwise';
 
 class ApiData {
     constructor(public id: number, public name: string, public dataAll: string, public dataSpectrum: string, public isComplete: boolean) { }
@@ -73,10 +70,10 @@ export class StatusService {
 })
 export class CanvasComponent implements AfterViewInit {
     private capture: boolean = false;
+    private index: number = 1;
     private buffer: Array<string> = [];
     private count: number = 0;
     private vrednost: number = 0;
-    private index: number = 1;
     private isLoading: boolean = false;
     private isComplete: boolean = false;
     private isPaused: boolean = false;
