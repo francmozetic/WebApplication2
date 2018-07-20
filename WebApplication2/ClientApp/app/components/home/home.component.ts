@@ -92,7 +92,8 @@ export class HomeComponent implements AfterViewInit {
         if (this.isPaused) { this.pauser.next(false); this.isPaused = false; } else { this.pauser.next(true); this.isPaused = true; }
     }
 
-    public ngAfterViewInit() {                                                                          // after creating a component, Angular calls the ngAfterViewInit() lifecycle hook method
+    public ngAfterViewInit() {
+        // after creating a component, Angular calls the ngAfterViewInit() lifecycle hook method
         this.ctx = this.canvas10.nativeElement.getContext('2d');
         this.canvas10.nativeElement.width = this.width;
         this.canvas10.nativeElement.height = this.height;
@@ -113,7 +114,8 @@ export class HomeComponent implements AfterViewInit {
                     this.buffer = valuesStr.split(" ");
                     this.buffer.shift();  
                     this.buffer.shift();
-                    this.buffer.pop();                                                                                  // pop the last sample from the bufferSaved array
+                    // pop the last sample from the bufferSaved array
+                    this.buffer.pop();
                     this.bufferSaved = this.bufferSaved.concat(this.buffer);
                 });
             this.index = this.index + 1;
