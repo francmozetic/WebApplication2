@@ -114,7 +114,7 @@ export class HomeComponent implements AfterViewInit {
                     this.buffer = valuesStr.split(" ");
                     this.buffer.shift();  
                     this.buffer.shift();
-                    // pop the last sample from the bufferSaved array
+                    // pop the last samples from the bufferSaved array
                     this.buffer.pop();
                     this.bufferSaved = this.bufferSaved.concat(this.buffer);
                 });
