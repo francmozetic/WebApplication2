@@ -75,11 +75,10 @@ export class HomeComponent implements AfterViewInit {
     private index: number = 1;
     private buffer: Array<string> = [];
     private bufferSaved: Array<string> = [];
-    private count: number = 0;
-    private vrednost: number = 0;
     private isPaused: boolean = false;
     private pauser = new Subject();
-    private offset = 0;
+    private offset: number = 0;
+    private vrednost: number = 0;
 
     @ViewChild('canvas10') public canvas10: ElementRef;
     @Input() public width = 1500;
@@ -105,33 +104,35 @@ export class HomeComponent implements AfterViewInit {
         this.ctx.strokeStyle = '#8B0000';
 
         this.capture = true;
-        this.pauser.switchMap(paused => paused ? Observable.never() : IntervalObservable.create(200))
+        this.index = 1;
+        while (this.index <= 40) {
+            let indexStr = String(this.index);
+            this.iTunes.captureData(indexStr)
+                .subscribe(data => {
+                    let valuesStr = data.dataAll;
+                    this.buffer = valuesStr.split(" ");
+                    this.buffer.shift();  
+                    this.buffer.shift();
+                    this.buffer.pop();                                                                                  // pop the last sample from the bufferSaved array
+                    this.bufferSaved = this.bufferSaved.concat(this.buffer);
+                });
+            this.index = this.index + 1;
+        }
+
+        this.pauser.switchMap(paused => paused ? Observable.never() : IntervalObservable.create(150))
             .subscribe(() => {
-                this.offset = this.offset + 10;
-                this.index = 1;
-                let indexStr = String(this.index);
-                this.iTunes.captureData(indexStr)
-                    .subscribe(data => {
-                        let valuesStr = data.dataAll;
-                        this.buffer = valuesStr.split(" ");
-                        this.buffer.shift();
-                        let countStr = this.buffer.shift();
-                        this.count = Number(countStr);
-                        for (let i = 0; i < this.offset; i++) {
-                            this.buffer.shift();
-                        }
-                        let vrednostStr = this.buffer.shift();
-                        this.vrednost = Number(vrednostStr);
-                        this.ctx.clearRect(0, 0, 750, 250);
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(0, 125 - this.vrednost * 125);
-                        for (let i = 1; i <= 1100; i++) {
-                            let vrednostStr = this.buffer.shift();
-                            this.vrednost = Number(vrednostStr);
-                            this.ctx.lineTo(i * 750 / 1100, 125 - this.vrednost * 125);
-                        }
-                        this.ctx.stroke();
-                    });
+                this.offset = this.offset + 100;
+                let vrednostStr = this.bufferSaved[this.offset];
+                this.vrednost = Number(vrednostStr);
+                this.ctx.clearRect(0, 0, 750, 250);
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, 125 - this.vrednost * 125);
+                for (let i = 1; i <= 8800; i++) {
+                    let vrednostStr = this.bufferSaved[this.offset + i];
+                    this.vrednost = Number(vrednostStr);
+                    this.ctx.lineTo(i * 750 / 8800, 125 - this.vrednost * 125);
+                }
+                this.ctx.stroke();
             });
 
         this.pauser.next(false);
